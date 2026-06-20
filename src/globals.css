@@ -1,0 +1,75 @@
+/* TripFlow — Pastel Design System */
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+    --pink-light:     #FFE4EC;
+    --pink:           #FFB3C6;
+    --pink-deep:      #FF8FAB;
+    --blue-light:     #E0F7FA;
+    --blue:           #A8E6E6;
+    --blue-deep:      #7FD4D4;
+    --mint-light:     #E8F8F0;
+    --mint:           #B8E8D4;
+    --mint-deep:      #8FD9B8;
+    --lavender-light: #F0E8FA;
+    --lavender:       #D4C2F0;
+    --peach-light:    #FFEFE0;
+    --peach:          #FFD4B8;
+
+    --bg:      #FFF8FB;
+    --surface: #FFFFFF;
+    --text:    #4A4458;
+    --text-mid:#8B7E96;
+    --muted:   #B5A8C0;
+    --border:  #F2DCE8;
+
+    --radius:    20px;
+    --radius-sm: 12px;
+
+    --shadow-sm: 0 2px 12px rgba(255,143,171,0.08);
+    --shadow-md: 0 6px 24px rgba(255,143,171,0.14);
+
+    --gradient-primary:  linear-gradient(135deg, #FF8FAB, #D4C2F0);
+    --gradient-optimize: linear-gradient(135deg, #A8E6E6, #B8E8D4);
+    --gradient-hero:     linear-gradient(135deg, #FFE4EC, #F0E8FA, #E0F7FA);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    direction: rtl;
+}
+
+button, input, textarea, select { font-family: inherit; }
+
+.scroll-x {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+
+@keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position:  600px 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, #F9ECF2 25%, #FFF5F8 50%, #F9ECF2 75%);
+    background-size: 1200px 100%;
+    animation: shimmer 1.4s infinite linear;
+    border-radius: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0);   }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
