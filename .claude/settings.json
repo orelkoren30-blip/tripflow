@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cmdkey /delete:\"LegacyGeneric:target=git:https://orelkoren@github.com\")",
+      "PowerShell(cmdkey /delete:\"LegacyGeneric:target=GitHub for Visual Studio - https://orelkoren@github.com/\")",
+      "PowerShell(cmdkey /delete:\"LegacyGeneric:target=GitHub - https://api.github.com/orelkoren\")",
+      "Bash(npm run *)",
+      "Bash(grep -E \"^C:\\\\\\\\\\\\\\\\|error|warning\")",
+      "Bash(npx eslint *)"
+    ]
+  }
+}

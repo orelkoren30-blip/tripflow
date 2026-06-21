@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { DESTINATIONS } from '../data/destinations'
+import { TRIP_TYPES } from '../data/packingListsByType'
 import BottomNav from '../components/BottomNav'
 import '../globals.css'
 
@@ -71,7 +72,7 @@ export default function MyTripsPage({ navigate, user }) {
     const [loading,     setLoading]     = useState(true)
     const [error,       setError]       = useState(null)
     const [showModal,   setShowModal]   = useState(false)
-    const [newTrip,     setNewTrip]     = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '' })
+    const [newTrip,     setNewTrip]     = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '' })
     const [creating,    setCreating]    = useState(false)
     const [createError, setCreateError] = useState(null)
     const [deletingTrip, setDeletingTrip] = useState(null)
@@ -90,7 +91,7 @@ export default function MyTripsPage({ navigate, user }) {
     }
 
     function openModal() {
-        setNewTrip({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '' })
+        setNewTrip({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '' })
         setCreateError(null); setShowModal(true)
     }
 
@@ -103,7 +104,7 @@ export default function MyTripsPage({ navigate, user }) {
         const { data, error } = await supabase.from('trips').insert({
             name: newTrip.name.trim(), start_date: newTrip.startDate || null, end_date: newTrip.endDate || null,
             cover_image_url: newTrip.coverImageUrl.trim() || null, cover_emoji: newTrip.coverEmoji || null,
-            destination: newTrip.destination || null, stops: 0, user_id: user.id,
+            destination: newTrip.destination || null, trip_type: newTrip.tripType || null, stops: 0, user_id: user.id,
         }).select().single()
         if (error) { setCreateError(error.message); setCreating(false); return }
         setShowModal(false); navigate('flow', data.id)
@@ -267,6 +268,11 @@ export default function MyTripsPage({ navigate, user }) {
                                     <input type="date" value={newTrip.endDate} min={newTrip.startDate} onChange={set('endDate')} style={INPUT} />
                                 </div>
                             </div>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>סוג טיול</label>
+                            <select value={newTrip.tripType} onChange={set('tripType')} style={{ ...INPUT, marginBottom: 14, cursor: 'pointer' }}>
+                                <option value="">בחרי סוג טיול (אופציונלי)</option>
+                                {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>תמונת כיסוי (URL)</label>
                             <input value={newTrip.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://..." style={{ ...INPUT, marginBottom: 14 }} />
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 8 }}>או בחרי יעד מוכן</label>

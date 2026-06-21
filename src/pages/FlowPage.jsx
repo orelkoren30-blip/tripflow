@@ -10,6 +10,7 @@ import {
     useSortable, arrayMove, verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import StatusBadge from '../components/StatusBadge'
 import '../globals.css'
 
 // ─────────────────────────────────────────────────────────────────
@@ -201,7 +202,7 @@ function recomputeConflictsFromDB(atts) {
 // ─────────────────────────────────────────────────────────────────
 // SortableCard
 // ─────────────────────────────────────────────────────────────────
-function SortableCard({ att, index, onDelete, onStart, onStop, isActive, elapsed, completedDuration }) {
+function SortableCard({ att, index, onDelete, onStart, onStop, onStatusChange, isActive, elapsed, completedDuration }) {
     const {
         attributes, listeners,
         setNodeRef, transform, transition, isDragging,
@@ -260,6 +261,9 @@ function SortableCard({ att, index, onDelete, onStart, onStop, isActive, elapsed
                             {att.type && (
                                 <p style={{ color: '#718096', fontSize: 11, marginTop: 2 }}>{att.type}</p>
                             )}
+                            <div style={{ marginTop: 6 }}>
+                                <StatusBadge status={att.status} onChange={(s) => onStatusChange(att, s)} />
+                            </div>
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginRight: -4 }}>
                             {/* drag handle — only this element gets the listeners */}
@@ -503,6 +507,12 @@ export default function FlowPage({ tripId, navigate }) {
             .eq('id', attId)
     }
 
+    // ── Status ────────────────────────────────
+    async function updateStatus(att, status) {
+        setAttractions(prev => prev.map(a => a.id === att.id ? { ...a, status } : a))
+        await supabase.from('attractions').update({ status }).eq('id', att.id)
+    }
+
     // ── Delete ────────────────────────────────
     async function deleteAttraction(att) {
         if (activeTimer?.attId === att.id) {
@@ -611,6 +621,24 @@ export default function FlowPage({ tripId, navigate }) {
                     </div>
                 </div>
 
+                {/* ניווט לתצוגות נוספות */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    <button onClick={() => navigate('timeline', tripId)} style={{
+                        flex: 1, background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
+                    }}>
+                        📊 תצוגת ציר זמן
+                    </button>
+                    <button onClick={() => navigate('packing', tripId)} style={{
+                        flex: 1, background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
+                    }}>
+                        🎒 רשימת ציוד
+                    </button>
+                </div>
+
                 {attractions.length === 0 ? (
                     <div style={{ background: 'white', borderRadius: 22, padding: '40px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
                         <p style={{ fontSize: 38, marginBottom: 10 }}>🗺️</p>
@@ -633,6 +661,7 @@ export default function FlowPage({ tripId, navigate }) {
                                         onDelete={deleteAttraction}
                                         onStart={startVisit}
                                         onStop={stopVisit}
+                                        onStatusChange={updateStatus}
                                         isActive={activeTimer?.attId === att.id}
                                         elapsed={activeTimer?.attId === att.id ? elapsed : 0}
                                         completedDuration={completedDurations[att.id] ?? null}

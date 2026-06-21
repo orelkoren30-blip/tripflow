@@ -6,6 +6,8 @@ import FlowPage       from './pages/FlowPage'
 import BuilderPage    from './pages/BuilderPage'
 import DiscoverPage   from './pages/DiscoverPage'
 import ProfilePage    from './pages/ProfilePage'
+import TimelineView   from './pages/TimelineView'
+import PackingListPage from './pages/PackingListPage'
 
 export default function App() {
     const [page,         setPage]         = useState('dashboard')
@@ -35,6 +37,8 @@ export default function App() {
     if (page === 'discover') return <DiscoverPage navigate={navigate} user={user} />
     if (page === 'profile')  return <ProfilePage  navigate={navigate} user={user} />
     if (page === 'trips')    return <MyTripsPage  navigate={navigate} user={user} />
+    if (page === 'timeline') return <TimelineView tripId={tripId} navigate={navigate} />
+    if (page === 'packing')  return <PackingListPage tripId={tripId} navigate={navigate} />
     return (
         <DashboardPage
             navigate={navigate}

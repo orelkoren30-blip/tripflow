@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { DESTINATIONS, CATEGORIES } from '../data/destinations'
+import { TRIP_TYPES } from '../data/packingListsByType'
 import BottomNav from '../components/BottomNav'
 import '../globals.css'
 
@@ -76,7 +77,8 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
     const [error,          setError]          = useState(null)
     const [activeCategory, setActiveCategory] = useState('הכל')
     const [showModal,      setShowModal]      = useState(false)
-    const [newTrip,        setNewTrip]        = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '' })
+    const [newTrip,        setNewTrip]        = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '' })
+    const [urgentCounts,   setUrgentCounts]   = useState({})
     const [creating,       setCreating]       = useState(false)
     const [createError,    setCreateError]    = useState(null)
     const [deletingTrip,   setDeletingTrip]   = useState(null)
@@ -99,12 +101,20 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
         if (user?.id) query = query.eq('user_id', user.id)
         const { data, error } = await query
         if (error) setError(error.message)
-        else setTrips(data ?? [])
+        else { setTrips(data ?? []); loadUrgentCounts((data ?? []).map(t => t.id)) }
         setLoading(false)
     }
 
+    async function loadUrgentCounts(tripIds) {
+        if (!tripIds.length) { setUrgentCounts({}); return }
+        const { data } = await supabase.from('attractions').select('trip_id').eq('status', 'urgent').in('trip_id', tripIds)
+        const counts = {}
+        ;(data ?? []).forEach(a => { counts[a.trip_id] = (counts[a.trip_id] ?? 0) + 1 })
+        setUrgentCounts(counts)
+    }
+
     function openModal(presetCoverImageUrl = '', presetName = '', presetDestination = '') {
-        setNewTrip({ name: presetName, startDate: '', endDate: '', coverImageUrl: presetCoverImageUrl, coverEmoji: '', destination: presetDestination })
+        setNewTrip({ name: presetName, startDate: '', endDate: '', coverImageUrl: presetCoverImageUrl, coverEmoji: '', destination: presetDestination, tripType: '' })
         setCreateError(null)
         setShowModal(true)
     }
@@ -119,7 +129,7 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
         const { data, error } = await supabase.from('trips').insert({
             name: newTrip.name.trim(), start_date: newTrip.startDate || null, end_date: newTrip.endDate || null,
             cover_image_url: newTrip.coverImageUrl.trim() || null, cover_emoji: newTrip.coverEmoji || null,
-            destination: newTrip.destination || null, stops: 0, user_id: user.id,
+            destination: newTrip.destination || null, trip_type: newTrip.tripType || null, stops: 0, user_id: user.id,
         }).select().single()
         if (error) { setCreateError(error.message); setCreating(false); return }
         setShowModal(false)
@@ -266,7 +276,12 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
                                         </p>
                                     )}
                                     <h3 style={{ color: trip.cover_image_url ? 'white' : '#4A4458', fontSize: 19, fontWeight: 800 }}>{trip.name}</h3>
-                                    <p style={{ color: trip.cover_image_url ? 'rgba(255,255,255,0.7)' : '#8B7E96', fontSize: 11, marginTop: 5 }}>📍 {trip.stops ?? 0} עצירות</p>
+                                    <p style={{ color: trip.cover_image_url ? 'rgba(255,255,255,0.7)' : '#8B7E96', fontSize: 11, marginTop: 5 }}>
+                                        📍 {trip.stops ?? 0} עצירות
+                                        {urgentCounts[trip.id] > 0 && (
+                                            <span style={{ color: '#FF6B6B', fontWeight: 800, marginRight: 8 }}> · 🔥 {urgentCounts[trip.id]} דחופות</span>
+                                        )}
+                                    </p>
                                 </div>
 
                                 <div style={{ position: 'absolute', top: '50%', left: 48, transform: 'translateY(-50%)', width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.4)' }}>
@@ -316,6 +331,11 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
                                     <input type="date" value={newTrip.endDate} min={newTrip.startDate} onChange={set('endDate')} style={INPUT} />
                                 </div>
                             </div>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>סוג טיול</label>
+                            <select value={newTrip.tripType} onChange={set('tripType')} style={{ ...INPUT, marginBottom: 14, cursor: 'pointer' }}>
+                                <option value="">בחרי סוג טיול (אופציונלי)</option>
+                                {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>תמונת כיסוי (URL)</label>
                             <input value={newTrip.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://..." style={{ ...INPUT, marginBottom: 14 }} />
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 8 }}>או בחרי יעד מוכן</label>

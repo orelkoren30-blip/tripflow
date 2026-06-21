@@ -11,6 +11,7 @@ import {
     useSortable, arrayMove, verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import StatusBadge from '../components/StatusBadge'
 import '../globals.css'
 
 // ─────────────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ function optimizeAttractions(attractions) {
 // ─────────────────────────────────────────────────────────────────
 // SortableItem
 // ─────────────────────────────────────────────────────────────────
-function SortableItem({ att, index, onDelete }) {
+function SortableItem({ att, index, onDelete, onStatusChange }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: att.id })
     const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, zIndex: isDragging ? 999 : 'auto' }
     const openingHoursText = att.opening_hours || getDefaultHours(att.type) || 'לא צוין'
@@ -131,8 +132,11 @@ function SortableItem({ att, index, onDelete }) {
 
                 {/* תוכן */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: '#4A4458', marginBottom: 2 }}>{att.name}</p>
-                    {att.type && <p style={{ color: '#8B7E96', fontSize: 11 }}>{att.type}</p>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <p style={{ fontWeight: 700, fontSize: 14, color: '#4A4458' }}>{att.name}</p>
+                        <StatusBadge status={att.status} onChange={(s) => onStatusChange(att, s)} />
+                    </div>
+                    {att.type && <p style={{ color: '#8B7E96', fontSize: 11, marginTop: 2 }}>{att.type}</p>}
                     {att.description && (
                         <p style={{ color: '#B5A8C0', fontSize: 11, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {att.description}
@@ -266,6 +270,11 @@ export default function BuilderPage({ tripId, navigate }) {
         await supabase.from('attractions').delete().eq('id', att.id)
         await supabase.from('trips').update({ stops: attractions.length - 1 }).eq('id', tripId)
         setAttractions(prev => prev.filter(a => a.id !== att.id))
+    }
+
+    async function updateStatus(att, status) {
+        setAttractions(prev => prev.map(a => a.id === att.id ? { ...a, status } : a))
+        await supabase.from('attractions').update({ status }).eq('id', att.id)
     }
 
     async function handleDragEnd({ active, over }) {
@@ -469,7 +478,7 @@ export default function BuilderPage({ tripId, navigate }) {
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={attractions.map(a => a.id)} strategy={verticalListSortingStrategy}>
                             {attractions.map((att, index) => (
-                                <SortableItem key={att.id} att={att} index={index} onDelete={deleteAttraction} />
+                                <SortableItem key={att.id} att={att} index={index} onDelete={deleteAttraction} onStatusChange={updateStatus} />
                             ))}
                         </SortableContext>
                     </DndContext>
