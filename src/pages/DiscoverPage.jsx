@@ -45,7 +45,7 @@ export default function DiscoverPage({ navigate }) {
                 <div className="scroll-x" style={{ gap: 8, paddingTop: 20, paddingBottom: 4 }}>
                     {CATEGORIES.map(cat => (
                         <button key={cat} onClick={() => setActiveCategory(cat)} style={{
-                            flexShrink: 0, padding: '8px 18px', borderRadius: 24, border: 'none', cursor: 'pointer',
+                            flexShrink: 0, padding: '8px 18px', borderRadius: 24, cursor: 'pointer',
                             fontSize: 13, fontWeight: 700, transition: 'all 0.2s',
                             background: activeCategory === cat ? 'linear-gradient(135deg, #FF8FAB, #D4C2F0)' : 'white',
                             color:      activeCategory === cat ? 'white' : '#8B7E96',

@@ -1,84 +1,19 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { DndContext, PointerSensor, useSensor, useSensors, useDraggable } from '@dnd-kit/core'
+import { fitsHours, parseDuration, minutesToTime, getDayCount, persistSchedule } from '../lib/autoSchedule'
 import '../globals.css'
 
 // ─────────────────────────────────────────────────────────────────
-// קבועי ציר הזמן
+// קבועי ציר הזמן (תצוגה — נפרד מקבועי האלגוריתם ב-autoSchedule.js)
 // ─────────────────────────────────────────────────────────────────
 const DAY_START_MIN = 6 * 60    // 06:00
 const DAY_END_MIN   = 23 * 60   // 23:00
 const PX_PER_MIN     = 1.4
 const SNAP_MIN        = 15
 
-// ברירות מחדל לשעות פעילות לפי סוג (עקבי עם BuilderPage/FlowPage)
-const DEFAULT_HOURS = {
-    'מוזיאון':      '09:00-17:00', 'גלריה':      '10:00-18:00',
-    'שוק':          '08:00-22:00', 'שוק מקומי':  '08:00-22:00',
-    'שוק לילה':     '18:00-02:00', 'פארק':       '06:00-20:00',
-    'גן':           '07:00-19:00', 'מסעדה':      '12:00-23:00',
-    'בר':           '17:00-02:00', 'קפה':        '07:00-22:00',
-    'חוף':          '06:00-21:00', 'חוף ים':     '06:00-21:00',
-    'מקדש':         '08:00-18:00', 'כנסייה':     '08:00-18:00',
-    'מסגד':         '09:00-17:00', 'מצודה':      '09:00-17:00',
-    'ארמון':        '09:00-17:00', 'אנדרטה':     '00:00-23:59',
-    'גשר':          '00:00-23:59', 'טבע':        '06:00-20:00',
-    'הר':           '06:00-20:00', 'נפלאות טבע': '06:00-20:00',
-    'אטרקציה':      '09:00-18:00', 'קניון':      '10:00-22:00',
-}
-function getDefaultHours(type) { return DEFAULT_HOURS[type] ?? null }
-function parseHours(str) {
-    if (!str) return null
-    const m = str.match(/(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/)
-    return m ? { open: +m[1] * 60 + +m[2], close: +m[3] * 60 + +m[4] } : null
-}
-function parseDuration(str) {
-    if (!str) return 60
-    const range = str.match(/(\d+)-(\d+)\s*שעות?/)
-    if (range) return Math.round(((+range[1] + +range[2]) / 2) * 60)
-    const hrs = str.match(/(\d+)\s*שעות?/)
-    if (hrs) return +hrs[1] * 60
-    const mins = str.match(/(\d+)\s*דקות/)
-    if (mins) return +mins[1]
-    if (str.includes('יום')) return 360
-    return 60
-}
-function fitsHours(att, arrivalMins) {
-    const h = parseHours(att.opening_hours || getDefaultHours(att.type))
-    return h ? arrivalMins >= h.open && arrivalMins < h.close : true
-}
-function timeToMinutes(str) {
-    if (!str) return null
-    const [h, m] = str.split(':').map(Number)
-    return h * 60 + m
-}
-function minutesToTime(mins) {
-    const safe = Math.round(mins)
-    const h = Math.floor(safe / 60).toString().padStart(2, '0')
-    const m = (safe % 60).toString().padStart(2, '0')
-    return `${h}:${m}`
-}
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)) }
 function snapTo(n, step) { return Math.round(n / step) * step }
-
-function getDayCount(trip) {
-    if (!trip?.start_date || !trip?.end_date) return 1
-    const start = new Date(trip.start_date + 'T00:00')
-    const end   = new Date(trip.end_date + 'T00:00')
-    const diff  = Math.round((end - start) / 86400000) + 1
-    return diff > 0 ? diff : 1
-}
-
-// מחשב שעת התחלה לכל אטרקציה: שעה מפורשת אם קיימת, אחרת רצף מ-09:00
-function withStartTimes(dayAttractions) {
-    let cur = DAY_START_MIN + 180 // 09:00
-    return dayAttractions.map(att => {
-        const explicit = timeToMinutes(att.estimated_arrival_time)
-        const start    = explicit != null ? explicit : cur
-        cur = start + parseDuration(att.estimated_duration) + 20
-        return { ...att, _startMin: start }
-    })
-}
 
 // ─────────────────────────────────────────────────────────────────
 // TimeRuler
@@ -98,7 +33,7 @@ function TimeRuler() {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// TimelineBlock — גריר לשינוי שעה
+// TimelineBlock — גריר לשינוי שעה (גרירה = manually_placed)
 // ─────────────────────────────────────────────────────────────────
 function TimelineBlock({ att, top, height, dayCount, onMoveDay }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: att.id })
@@ -129,7 +64,8 @@ function TimelineBlock({ att, top, height, dayCount, onMoveDay }) {
                     {typeof att.icon === 'string' && att.icon.length <= 2 ? `${att.icon} ` : ''}{att.name}
                 </p>
                 <p style={{ fontSize: 10, color: hasConflict ? '#c53030' : '#8B7E96', marginTop: 1 }}>
-                    {minutesToTime(att._startMin)}{att.estimated_duration ? ` · ${att.estimated_duration}` : ''}
+                    {att.estimated_arrival_time}{att.estimated_duration ? ` · ${att.estimated_duration}` : ''}
+                    {att.manually_placed ? ' · 📌' : ''}
                     {hasConflict ? ' ⚠️' : ''}
                 </p>
             </div>
@@ -137,7 +73,7 @@ function TimelineBlock({ att, top, height, dayCount, onMoveDay }) {
             {dayCount > 1 && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onMoveDay(att) }}
-                    title="העבר ליום אחר"
+                    title="העבר ליום אחר (קבוע ידנית)"
                     style={{
                         position: 'absolute', top: 2, left: 2, zIndex: 5,
                         background: 'rgba(255,255,255,0.85)', border: '1px solid #F2DCE8',
@@ -145,7 +81,7 @@ function TimelineBlock({ att, top, height, dayCount, onMoveDay }) {
                         color: '#8B7E96', cursor: 'pointer',
                     }}
                 >
-                    📅 {(att.day_index ?? 0) + 1}
+                    📅 {att.scheduled_day ?? 1}
                 </button>
             )}
         </div>
@@ -160,14 +96,9 @@ export default function TimelineView({ tripId, navigate }) {
     const [attractions, setAttractions] = useState([])
     const [loading,     setLoading]     = useState(true)
     const [error,       setError]       = useState(null)
-    const [activeDay,   setActiveDay]   = useState(0)
+    const [activeDay,   setActiveDay]   = useState(1)
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
-
-    useEffect(() => {
-        if (!tripId) { navigate('dashboard'); return }
-        loadAll()
-    }, [tripId])
 
     async function loadAll() {
         setLoading(true)
@@ -177,10 +108,19 @@ export default function TimelineView({ tripId, navigate }) {
         ])
         if (tripRes.error) { setError(tripRes.error.message); setLoading(false); return }
         setTrip(tripRes.data)
-        setAttractions(attRes.data ?? [])
+
+        // שיבוץ אוטומטי בכל טעינה — לא מחכים לפעולת משתמש
+        const merged = await persistSchedule(attRes.data ?? [], getDayCount(tripRes.data))
+        setAttractions(merged)
         setLoading(false)
     }
 
+    useEffect(() => {
+        if (!tripId) { navigate('dashboard'); return }
+        loadAll()
+    }, [tripId])
+
+    // ── גרירה אנכית = שינוי שעה ידני (manually_placed) ──
     async function handleDragEnd({ active, delta }) {
         const att = dayAttractions.find(a => a.id === active.id)
         if (!att) return
@@ -188,20 +128,28 @@ export default function TimelineView({ tripId, navigate }) {
         const snapped = clamp(snapTo(rawMin, SNAP_MIN), DAY_START_MIN, DAY_END_MIN - SNAP_MIN)
         const timeStr = minutesToTime(snapped)
 
-        setAttractions(prev => prev.map(a => a.id === att.id ? { ...a, estimated_arrival_time: timeStr } : a))
-        await supabase.from('attractions').update({ estimated_arrival_time: timeStr }).eq('id', att.id)
+        setAttractions(prev => prev.map(a => a.id === att.id ? { ...a, estimated_arrival_time: timeStr, manually_placed: true } : a))
+        await supabase.from('attractions').update({ estimated_arrival_time: timeStr, manually_placed: true, scheduled_day: att.scheduled_day ?? activeDay }).eq('id', att.id)
     }
 
+    // ── כפתור 📅 — העברה ליום אחר = גם הופך ל-manually_placed ──
     async function moveDay(att) {
-        const nextDay = ((att.day_index ?? 0) + 1) % dayCount
-        setAttractions(prev => prev.map(a => a.id === att.id ? { ...a, day_index: nextDay } : a))
-        await supabase.from('attractions').update({ day_index: nextDay }).eq('id', att.id)
+        const dayCount = getDayCount(trip)
+        const nextDay = ((att.scheduled_day ?? 1) % dayCount) + 1
+        setAttractions(prev => prev.map(a => a.id === att.id ? { ...a, scheduled_day: nextDay, manually_placed: true } : a))
+        await supabase.from('attractions').update({ scheduled_day: nextDay, manually_placed: true }).eq('id', att.id)
+    }
+
+    function timeToMin(str) {
+        if (!str) return DAY_START_MIN + 180
+        const [h, m] = str.split(':').map(Number)
+        return h * 60 + m
     }
 
     if (loading) return (
         <div style={CENTER_SCREEN}>
             <p style={{ fontSize: 40, marginBottom: 12 }}>📊</p>
-            <p style={{ color: '#8B7E96', fontSize: 14 }}>טוען ציר זמן...</p>
+            <p style={{ color: '#8B7E96', fontSize: 14 }}>מסדרת את המסלול לפי שעות פעילות...</p>
         </div>
     )
 
@@ -214,11 +162,13 @@ export default function TimelineView({ tripId, navigate }) {
     )
 
     const dayCount = getDayCount(trip)
-    const dayAttractionsRaw = attractions
-        .filter(a => (a.day_index ?? 0) === activeDay)
-        .sort((a, b) => a.order_index - b.order_index)
-    const dayAttractions = withStartTimes(dayAttractionsRaw)
-        .map(a => ({ ...a, has_conflict: !fitsHours(a, a._startMin) }))
+    const scheduledAttractions = attractions.filter(a => !a.unscheduled)
+    const unscheduledAttractions = attractions.filter(a => a.unscheduled)
+
+    const dayAttractions = scheduledAttractions
+        .filter(a => (a.scheduled_day ?? 1) === activeDay)
+        .map(a => ({ ...a, _startMin: timeToMin(a.estimated_arrival_time), has_conflict: !fitsHours(a, timeToMin(a.estimated_arrival_time)) }))
+        .sort((a, b) => a._startMin - b._startMin)
 
     const trackHeight = (DAY_END_MIN - DAY_START_MIN) * PX_PER_MIN
 
@@ -236,7 +186,7 @@ export default function TimelineView({ tripId, navigate }) {
 
                 {dayCount > 1 && (
                     <div className="scroll-x" style={{ gap: 8 }}>
-                        {Array.from({ length: dayCount }, (_, d) => d).map(d => (
+                        {Array.from({ length: dayCount }, (_, i) => i + 1).map(d => (
                             <button key={d} onClick={() => setActiveDay(d)} style={{
                                 flexShrink: 0, padding: '7px 16px', borderRadius: 24, cursor: 'pointer',
                                 fontSize: 12, fontWeight: 700,
@@ -244,7 +194,7 @@ export default function TimelineView({ tripId, navigate }) {
                                 color:      activeDay === d ? 'white' : '#8B7E96',
                                 border:     activeDay === d ? 'none' : '1px solid #F2DCE8',
                                 boxShadow:  activeDay === d ? '0 3px 10px rgba(255,143,171,0.35)' : 'none',
-                            }}>יום {d + 1}</button>
+                            }}>יום {d}</button>
                         ))}
                     </div>
                 )}
@@ -262,7 +212,6 @@ export default function TimelineView({ tripId, navigate }) {
                         <div style={{ display: 'flex', direction: 'ltr' }}>
                             <TimeRuler />
                             <div style={{ position: 'relative', flex: 1, height: trackHeight, marginRight: 10 }}>
-                                {/* קווי שעה */}
                                 {Array.from({ length: Math.floor((DAY_END_MIN - DAY_START_MIN) / 60) + 1 }, (_, i) => i * 60).map(m => (
                                     <div key={m} style={{ position: 'absolute', top: m * PX_PER_MIN, left: 0, right: 0, borderTop: '1px dashed #F2DCE8' }} />
                                 ))}
@@ -279,6 +228,28 @@ export default function TimelineView({ tripId, navigate }) {
                             </div>
                         </div>
                     </DndContext>
+                )}
+
+                {/* ═══ לא שובצו ═══ */}
+                {unscheduledAttractions.length > 0 && (
+                    <div style={{ marginTop: 24 }}>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: '#c53030', marginBottom: 10 }}>
+                            ⚠️ לא שובצו — אין מקום בלוח הזמנים
+                        </p>
+                        {unscheduledAttractions.map(att => (
+                            <div key={att.id} style={{
+                                background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 14,
+                                padding: '10px 14px', marginBottom: 8,
+                            }}>
+                                <p style={{ fontSize: 13, fontWeight: 700, color: '#4A4458' }}>
+                                    {typeof att.icon === 'string' && att.icon.length <= 2 ? `${att.icon} ` : ''}{att.name}
+                                </p>
+                                <p style={{ fontSize: 11, color: '#c53030', marginTop: 3 }}>
+                                    {att.unscheduled_reason ?? 'שעות הפעילות לא מתאימות לזמן הפנוי'}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
         </div>

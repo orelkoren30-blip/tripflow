@@ -19,11 +19,6 @@ export default function PackingListPage({ tripId, navigate }) {
     const [newCategory, setNewCategory] = useState(PACKING_CATEGORIES[0])
     const [adding,     setAdding]     = useState(false)
 
-    useEffect(() => {
-        if (!tripId) { navigate('dashboard'); return }
-        loadAll()
-    }, [tripId])
-
     async function loadAll() {
         setLoading(true)
         const [tripRes, itemsRes] = await Promise.all([
@@ -53,6 +48,11 @@ export default function PackingListPage({ tripId, navigate }) {
         setItems(currentItems)
         setLoading(false)
     }
+
+    useEffect(() => {
+        if (!tripId) { navigate('dashboard'); return }
+        loadAll()
+    }, [tripId])
 
     async function togglePacked(item) {
         const newVal = !item.is_packed

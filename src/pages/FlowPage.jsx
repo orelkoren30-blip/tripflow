@@ -11,6 +11,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import StatusBadge from '../components/StatusBadge'
+import { getDayCount, persistSchedule } from '../lib/autoSchedule'
 import '../globals.css'
 
 // ─────────────────────────────────────────────────────────────────
@@ -520,7 +521,9 @@ export default function FlowPage({ tripId, navigate }) {
         }
         await supabase.from('attractions').delete().eq('id', att.id)
         await supabase.from('trips').update({ stops: attractions.length - 1 }).eq('id', tripId)
-        setAttractions(prev => prev.filter(a => a.id !== att.id))
+        const remaining = attractions.filter(a => a.id !== att.id)
+        const merged = await persistSchedule(remaining, getDayCount(trip))
+        setAttractions(merged)
         setCompletedDurations(prev => { const n = { ...prev }; delete n[att.id]; return n })
     }
 

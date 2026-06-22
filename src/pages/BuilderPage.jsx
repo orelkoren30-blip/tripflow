@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import StatusBadge from '../components/StatusBadge'
+import { getDayCount, persistSchedule } from '../lib/autoSchedule'
 import '../globals.css'
 
 // ─────────────────────────────────────────────────────────────────
@@ -217,11 +218,6 @@ export default function BuilderPage({ tripId, navigate }) {
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
     )
 
-    useEffect(() => {
-        if (!tripId) { navigate('dashboard'); return }
-        loadAll()
-    }, [tripId])
-
     async function loadAll() {
         setLoading(true)
         const [tripRes, attRes] = await Promise.all([
@@ -234,11 +230,22 @@ export default function BuilderPage({ tripId, navigate }) {
         setLoading(false)
     }
 
+    useEffect(() => {
+        if (!tripId) { navigate('dashboard'); return }
+        loadAll()
+    }, [tripId])
+
+    // מריץ autoScheduleTimeline על הרשימה העדכנית ושומר ב-Supabase ב-batch אחד
+    async function rescheduleAndSync(list) {
+        const merged = await persistSchedule(list, getDayCount(trip))
+        setAttractions(merged)
+    }
+
     async function addPreset(preset) {
         if (addingId === preset.name) return
         if (attractions.some(a => a.name === preset.name)) return
         setAddingId(preset.name); setPresetError(null)
-        const { error } = await supabase.from('attractions').insert({
+        const { data, error } = await supabase.from('attractions').insert({
             trip_id: tripId, name: preset.name, description: preset.description,
             type: preset.type, icon: preset.icon,
             latitude:  typeof preset.latitude  === 'number' ? preset.latitude  : parseFloat(preset.latitude),
@@ -246,9 +253,12 @@ export default function BuilderPage({ tripId, navigate }) {
             order_index: attractions.length,
             opening_hours: preset.openingHours ?? null,
             estimated_duration: preset.estimatedDuration ?? null,
-        })
+        }).select().single()
         if (error) setPresetError(`שגיאה בהוספת "${preset.name}": ${error.message}`)
-        else { await supabase.from('trips').update({ stops: attractions.length + 1 }).eq('id', tripId); await loadAll() }
+        else {
+            await supabase.from('trips').update({ stops: attractions.length + 1 }).eq('id', tripId)
+            await rescheduleAndSync([...attractions, data])
+        }
         setAddingId(null)
     }
 
@@ -258,18 +268,20 @@ export default function BuilderPage({ tripId, navigate }) {
         e.preventDefault()
         if (!form.name.trim()) return
         setSaving(true); setError(null)
-        const { error } = await supabase.from('attractions').insert({
+        const { data, error } = await supabase.from('attractions').insert({
             trip_id: tripId, name: form.name.trim(), description: form.description.trim(), order_index: attractions.length,
-        })
+        }).select().single()
         if (error) { setError(error.message); setSaving(false); return }
         await supabase.from('trips').update({ stops: attractions.length + 1 }).eq('id', tripId)
-        setForm({ name: '', description: '' }); await loadAll(); setSaving(false)
+        setForm({ name: '', description: '' })
+        await rescheduleAndSync([...attractions, data])
+        setSaving(false)
     }
 
     async function deleteAttraction(att) {
         await supabase.from('attractions').delete().eq('id', att.id)
         await supabase.from('trips').update({ stops: attractions.length - 1 }).eq('id', tripId)
-        setAttractions(prev => prev.filter(a => a.id !== att.id))
+        await rescheduleAndSync(attractions.filter(a => a.id !== att.id))
     }
 
     async function updateStatus(att, status) {
@@ -281,17 +293,19 @@ export default function BuilderPage({ tripId, navigate }) {
         if (!over || active.id === over.id) return
         const oldIdx = attractions.findIndex(a => a.id === active.id)
         const newIdx = attractions.findIndex(a => a.id === over.id)
-        const reordered = arrayMove(attractions, oldIdx, newIdx)
+        const reordered = arrayMove(attractions, oldIdx, newIdx).map((att, i) => ({ ...att, order_index: i }))
         setAttractions(reordered)
-        await Promise.all(reordered.map((att, i) => supabase.from('attractions').update({ order_index: i }).eq('id', att.id)))
+        await Promise.all(reordered.map(att => supabase.from('attractions').update({ order_index: att.order_index }).eq('id', att.id)))
+        await rescheduleAndSync(reordered)
     }
 
     async function autoSort() {
         if (attractions.length < 2) return
         setOptimizing(true)
-        const optimized = optimizeAttractions(attractions)
+        const optimized = optimizeAttractions(attractions).map((att, i) => ({ ...att, order_index: i }))
         setAttractions(optimized)
-        await Promise.all(optimized.map((att, i) => supabase.from('attractions').update({ order_index: i }).eq('id', att.id)))
+        await Promise.all(optimized.map(att => supabase.from('attractions').update({ order_index: att.order_index }).eq('id', att.id)))
+        await rescheduleAndSync(optimized)
         setOptimizing(false)
     }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export const STATUS_CONFIG = {
+const STATUS_CONFIG = {
     planned:     { label: 'מתוכנן', icon: '📋', bg: '#F2F1F5', text: '#6B6478', border: '#E2DEEA' },
     in_progress: { label: 'בטיפול', icon: '⏳', bg: '#E0F7FA', text: '#3A9E9E', border: '#A8E6E6' },
     done:        { label: 'הושלם',  icon: '✅', bg: '#E8F8F0', text: '#3A9E7A', border: '#B8E8D4' },
