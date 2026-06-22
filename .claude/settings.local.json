@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm config *)",
+      "Bash(curl -sI http://www.google.com)",
+      "PowerShell(w32tm /stripchart /computer:time.windows.com /samples:1 /dataonly)",
+      "Bash(openssl s_client -connect registry.npmjs.org:443 -servername registry.npmjs.org)",
+      "Bash(openssl x509 *)",
+      "Bash(openssl s_client -connect registry.npmjs.org:443 -servername registry.npmjs.org -showcerts)",
+      "Bash(curl -s \"http://localhost:5173/src/pages/FlowPage.jsx\")",
+      "Bash(curl -s -o /dev/null -w \"dev server HTTP status: %{http_code}\\\\n\" \"http://localhost:5173/\")",
+      "Bash(echo \"exit: $?\")",
+      "WebSearch",
+      "WebFetch(domain:unsplash.com)",
+      "WebFetch(domain:source.unsplash.com)"
+    ]
+  }
+}

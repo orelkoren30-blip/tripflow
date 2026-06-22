@@ -11,6 +11,8 @@ export const DESTINATIONS = [
     { id: 10, name: 'חוף אמאלפי',    country: 'איטליה',       category: 'רומנטי',   description: 'כפרים צבעוניים מסולסלים על צלעות הר מעל הים הים תיכוני',    img: 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=600&q=80' },
     { id: 11, name: 'פטגוניה',       country: 'ארגנטינה',    category: 'הרפתקה',  description: 'קרחונים כחולים, הרי גרניט ושקט שאין כמוהו בעולם',          img: 'https://images.unsplash.com/photo-1531804055935-76f44d7c3621?w=600&q=80' },
     { id: 12, name: 'קייפ טאון',     country: 'דרום אפריקה', category: 'טבע',      description: 'הר שולחן מרשים, חופים פראיים וחיי לילה תוססים',             img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=600&q=80' },
+    { id: 13, name: 'ניו יורק',      country: 'ארה"ב',        category: 'תרבות',    description: 'העיר שלא נחה לעולם — גורדי שחקים, פארקים ירוקים ותרבות בכל פינה', img: null, emoji: '🗽' },
+    { id: 14, name: 'פיטסבורג',      country: 'ארה"ב',        category: 'ייחודי',   description: 'עיר הגשרים על שלושת הנהרות — מוזיאונים, רכבלים הררים וקסם תעשייתי שהתחדש', img: null, emoji: '🌉' },
 ]
 
 export const CATEGORIES = ['הכל', 'רומנטי', 'הרפתקה', 'חוף', 'תרבות', 'טבע', 'יוקרה', 'ייחודי', 'היסטוריה']

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { DESTINATIONS } from '../data/destinations'
 import { TRIP_TYPES } from '../data/packingListsByType'
+import { CURRENCIES } from '../data/currencies'
 import BottomNav from '../components/BottomNav'
 import '../globals.css'
 
@@ -72,7 +73,7 @@ export default function MyTripsPage({ navigate, user }) {
     const [loading,     setLoading]     = useState(true)
     const [error,       setError]       = useState(null)
     const [showModal,   setShowModal]   = useState(false)
-    const [newTrip,     setNewTrip]     = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '' })
+    const [newTrip,     setNewTrip]     = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '', localCurrency: '' })
     const [creating,    setCreating]    = useState(false)
     const [createError, setCreateError] = useState(null)
     const [deletingTrip, setDeletingTrip] = useState(null)
@@ -91,7 +92,7 @@ export default function MyTripsPage({ navigate, user }) {
     }
 
     function openModal() {
-        setNewTrip({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '' })
+        setNewTrip({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '', localCurrency: '' })
         setCreateError(null); setShowModal(true)
     }
 
@@ -104,7 +105,8 @@ export default function MyTripsPage({ navigate, user }) {
         const { data, error } = await supabase.from('trips').insert({
             name: newTrip.name.trim(), start_date: newTrip.startDate || null, end_date: newTrip.endDate || null,
             cover_image_url: newTrip.coverImageUrl.trim() || null, cover_emoji: newTrip.coverEmoji || null,
-            destination: newTrip.destination || null, trip_type: newTrip.tripType || null, stops: 0, user_id: user.id,
+            destination: newTrip.destination || null, trip_type: newTrip.tripType || null,
+            local_currency: newTrip.localCurrency || null, stops: 0, user_id: user.id,
         }).select().single()
         if (error) { setCreateError(error.message); setCreating(false); return }
         setShowModal(false); navigate('flow', data.id)
@@ -268,19 +270,33 @@ export default function MyTripsPage({ navigate, user }) {
                                     <input type="date" value={newTrip.endDate} min={newTrip.startDate} onChange={set('endDate')} style={INPUT} />
                                 </div>
                             </div>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>סוג טיול</label>
-                            <select value={newTrip.tripType} onChange={set('tripType')} style={{ ...INPUT, marginBottom: 14, cursor: 'pointer' }}>
-                                <option value="">בחרי סוג טיול (אופציונלי)</option>
-                                {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                            <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>סוג טיול</label>
+                                    <select value={newTrip.tripType} onChange={set('tripType')} style={{ ...INPUT, cursor: 'pointer' }}>
+                                        <option value="">בחרי (אופציונלי)</option>
+                                        {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>מטבע מקומי</label>
+                                    <select value={newTrip.localCurrency} onChange={set('localCurrency')} style={{ ...INPUT, cursor: 'pointer' }}>
+                                        <option value="">בחרי (אופציונלי)</option>
+                                        {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                            </div>
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>תמונת כיסוי (URL)</label>
                             <input value={newTrip.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://..." style={{ ...INPUT, marginBottom: 14 }} />
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 8 }}>או בחרי יעד מוכן</label>
                             <div className="scroll-x" style={{ gap: 10, marginBottom: 20, paddingBottom: 4 }}>
                                 {DESTINATIONS.map(d => (
-                                    <div key={d.id} onClick={() => setNewTrip(prev => ({ ...prev, coverImageUrl: d.img, name: prev.name || d.name, destination: d.name }))} style={{ flexShrink: 0, textAlign: 'center', cursor: 'pointer' }}>
+                                    <div key={d.id} onClick={() => setNewTrip(prev => ({ ...prev, coverImageUrl: d.img, coverEmoji: d.emoji ?? '', name: prev.name || d.name, destination: d.name }))} style={{ flexShrink: 0, textAlign: 'center', cursor: 'pointer' }}>
                                         <div style={{ width: 68, height: 68, borderRadius: 16, overflow: 'hidden', marginBottom: 4, border: newTrip.coverImageUrl === d.img ? '3px solid #FF8FAB' : '3px solid transparent' }}>
-                                            <img src={d.img} alt={d.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            {d.img
+                                                ? <img src={d.img} alt={d.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #FFE4EC, #F0E8FA)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{d.emoji ?? '🗺️'}</div>
+                                            }
                                         </div>
                                         <p style={{ fontSize: 10, fontWeight: 600, color: '#8B7E96' }}>{d.name}</p>
                                     </div>

@@ -625,20 +625,41 @@ export default function FlowPage({ tripId, navigate }) {
                 </div>
 
                 {/* ניווט לתצוגות נוספות */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                     <button onClick={() => navigate('timeline', tripId)} style={{
-                        flex: 1, background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        flex: '1 1 calc(50% - 4px)', background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
                         padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                         boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
                     }}>
                         📊 תצוגת ציר זמן
                     </button>
                     <button onClick={() => navigate('packing', tripId)} style={{
-                        flex: 1, background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        flex: '1 1 calc(50% - 4px)', background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
                         padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                         boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
                     }}>
                         🎒 רשימת ציוד
+                    </button>
+                    <button onClick={() => navigate('documents', tripId)} style={{
+                        flex: '1 1 calc(50% - 4px)', background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
+                    }}>
+                        📁 מסמכים
+                    </button>
+                    <button onClick={() => navigate('map', tripId)} style={{
+                        flex: '1 1 calc(50% - 4px)', background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
+                    }}>
+                        🗺️ מפה
+                    </button>
+                    <button onClick={() => navigate('expenses', tripId)} style={{
+                        flex: '1 1 calc(50% - 4px)', background: 'white', border: '1px solid #F2DCE8', borderRadius: 14,
+                        padding: '10px 0', color: '#4A4458', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(255,143,171,0.1)',
+                    }}>
+                        💰 תקציב
                     </button>
                 </div>
 

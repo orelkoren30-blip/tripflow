@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { DESTINATIONS, CATEGORIES } from '../data/destinations'
 import { TRIP_TYPES } from '../data/packingListsByType'
+import { CURRENCIES } from '../data/currencies'
 import BottomNav from '../components/BottomNav'
 import '../globals.css'
 
@@ -77,7 +78,7 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
     const [error,          setError]          = useState(null)
     const [activeCategory, setActiveCategory] = useState('הכל')
     const [showModal,      setShowModal]      = useState(false)
-    const [newTrip,        setNewTrip]        = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '' })
+    const [newTrip,        setNewTrip]        = useState({ name: '', startDate: '', endDate: '', coverImageUrl: '', coverEmoji: '', destination: '', tripType: '', localCurrency: '' })
     const [urgentCounts,   setUrgentCounts]   = useState({})
     const [creating,       setCreating]       = useState(false)
     const [createError,    setCreateError]    = useState(null)
@@ -90,7 +91,7 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
 
     useEffect(() => {
         if (initialModal) {
-            openModal(initialModal.coverImageUrl ?? '', initialModal.name ?? '', initialModal.destination ?? '')
+            openModal(initialModal.coverImageUrl ?? '', initialModal.name ?? '', initialModal.destination ?? '', initialModal.coverEmoji ?? '')
             clearInitialModal?.()
         }
     }, [initialModal])
@@ -113,8 +114,8 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
         setUrgentCounts(counts)
     }
 
-    function openModal(presetCoverImageUrl = '', presetName = '', presetDestination = '') {
-        setNewTrip({ name: presetName, startDate: '', endDate: '', coverImageUrl: presetCoverImageUrl, coverEmoji: '', destination: presetDestination, tripType: '' })
+    function openModal(presetCoverImageUrl = '', presetName = '', presetDestination = '', presetCoverEmoji = '') {
+        setNewTrip({ name: presetName, startDate: '', endDate: '', coverImageUrl: presetCoverImageUrl, coverEmoji: presetCoverEmoji, destination: presetDestination, tripType: '', localCurrency: '' })
         setCreateError(null)
         setShowModal(true)
     }
@@ -129,7 +130,8 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
         const { data, error } = await supabase.from('trips').insert({
             name: newTrip.name.trim(), start_date: newTrip.startDate || null, end_date: newTrip.endDate || null,
             cover_image_url: newTrip.coverImageUrl.trim() || null, cover_emoji: newTrip.coverEmoji || null,
-            destination: newTrip.destination || null, trip_type: newTrip.tripType || null, stops: 0, user_id: user.id,
+            destination: newTrip.destination || null, trip_type: newTrip.tripType || null,
+            local_currency: newTrip.localCurrency || null, stops: 0, user_id: user.id,
         }).select().single()
         if (error) { setCreateError(error.message); setCreating(false); return }
         setShowModal(false)
@@ -218,8 +220,11 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
                     </div>
                     <div className="scroll-x" style={{ gap: 14, paddingBottom: 8 }}>
                         {visibleDests.map(dest => (
-                            <div key={dest.id} onClick={() => openModal(dest.img, dest.name)} style={{ flexShrink: 0, width: 148, height: 200, borderRadius: 22, overflow: 'hidden', position: 'relative', cursor: 'pointer', boxShadow: '0 8px 24px rgba(255,143,171,0.18)' }}>
-                                <img src={dest.img} alt={dest.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <div key={dest.id} onClick={() => openModal(dest.img, dest.name, dest.name, dest.emoji)} style={{ flexShrink: 0, width: 148, height: 200, borderRadius: 22, overflow: 'hidden', position: 'relative', cursor: 'pointer', boxShadow: '0 8px 24px rgba(255,143,171,0.18)' }}>
+                                {dest.img
+                                    ? <img src={dest.img} alt={dest.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #FFE4EC, #F0E8FA, #E0F7FA)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56 }}>{dest.emoji ?? '🗺️'}</div>
+                                }
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(74,68,88,0.82) 38%, transparent 68%)' }} />
                                 <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(10px)', borderRadius: 20, padding: '3px 10px', border: '1px solid rgba(255,255,255,0.35)' }}>
                                     <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>{dest.category}</span>
@@ -331,19 +336,33 @@ export default function DashboardPage({ navigate, user, initialModal, clearIniti
                                     <input type="date" value={newTrip.endDate} min={newTrip.startDate} onChange={set('endDate')} style={INPUT} />
                                 </div>
                             </div>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>סוג טיול</label>
-                            <select value={newTrip.tripType} onChange={set('tripType')} style={{ ...INPUT, marginBottom: 14, cursor: 'pointer' }}>
-                                <option value="">בחרי סוג טיול (אופציונלי)</option>
-                                {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                            <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>סוג טיול</label>
+                                    <select value={newTrip.tripType} onChange={set('tripType')} style={{ ...INPUT, cursor: 'pointer' }}>
+                                        <option value="">בחרי (אופציונלי)</option>
+                                        {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>מטבע מקומי</label>
+                                    <select value={newTrip.localCurrency} onChange={set('localCurrency')} style={{ ...INPUT, cursor: 'pointer' }}>
+                                        <option value="">בחרי (אופציונלי)</option>
+                                        {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                            </div>
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 6 }}>תמונת כיסוי (URL)</label>
                             <input value={newTrip.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://..." style={{ ...INPUT, marginBottom: 14 }} />
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8B7E96', marginBottom: 8 }}>או בחרי יעד מוכן</label>
                             <div className="scroll-x" style={{ gap: 10, marginBottom: 20, paddingBottom: 4 }}>
                                 {DESTINATIONS.map(d => (
-                                    <div key={d.id} onClick={() => setNewTrip(prev => ({ ...prev, coverImageUrl: d.img, name: prev.name || d.name, destination: d.name }))} style={{ flexShrink: 0, textAlign: 'center', cursor: 'pointer' }}>
+                                    <div key={d.id} onClick={() => setNewTrip(prev => ({ ...prev, coverImageUrl: d.img, coverEmoji: d.emoji ?? '', name: prev.name || d.name, destination: d.name }))} style={{ flexShrink: 0, textAlign: 'center', cursor: 'pointer' }}>
                                         <div style={{ width: 68, height: 68, borderRadius: 16, overflow: 'hidden', marginBottom: 4, border: newTrip.coverImageUrl === d.img ? '3px solid #FF8FAB' : '3px solid transparent' }}>
-                                            <img src={d.img} alt={d.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            {d.img
+                                                ? <img src={d.img} alt={d.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #FFE4EC, #F0E8FA)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{d.emoji ?? '🗺️'}</div>
+                                            }
                                         </div>
                                         <p style={{ fontSize: 10, fontWeight: 600, color: '#8B7E96' }}>{d.name}</p>
                                     </div>

@@ -66,9 +66,9 @@ export function getDayCount(trip) {
 // ─────────────────────────────────────────────────────────────────
 // autoScheduleTimeline — שיבוץ אוטומטי של יום+שעה לכל אטרקציה
 // ─────────────────────────────────────────────────────────────────
-const SCHEDULE_DAY_START = 9 * 60   // 09:00
-const SCHEDULE_DAY_END   = 22 * 60  // 22:00 — יום מלא, עוברים ליום הבא
-const TRAVEL_MINS = 20
+export const SCHEDULE_DAY_START = 9 * 60   // 09:00
+export const SCHEDULE_DAY_END   = 22 * 60  // 22:00 — יום מלא, עוברים ליום הבא
+export const TRAVEL_MINS = 20
 const UNSCHEDULED_REASON = 'שעות הפעילות לא מתאימות לזמן הפנוי בטיול'
 
 // מחפש את היום/שעה הקרובים שמתאימים לשעות הפעילות, מתקדם יום-יום עד dayCount

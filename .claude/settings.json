@@ -6,7 +6,13 @@
       "PowerShell(cmdkey /delete:\"LegacyGeneric:target=GitHub - https://api.github.com/orelkoren\")",
       "Bash(npm run *)",
       "Bash(grep -E \"^C:\\\\\\\\\\\\\\\\|error|warning\")",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(PowerShell.exe -NoProfile -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime\")",
+      "Bash(curl -s \"http://localhost:5173/src/pages/TimelineView.jsx\")",
+      "Bash(NODE_OPTIONS=\"--use-system-ca\" npm install tesseract.js)",
+      "Bash(curl -sS -I https://registry.npmjs.org/tesseract.js)",
+      "Bash(node --use-system-ca --version)",
+      "Bash(node -e \"console.log\\(process.version\\); console.log\\(require\\('tls'\\).rootCertificates.length + ' bundled root certs'\\)\")"
     ]
   }
 }

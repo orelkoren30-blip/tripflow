@@ -14,7 +14,7 @@ export default function DiscoverPage({ navigate }) {
     })
 
     function planTrip(dest) {
-        navigate('dashboard', null, { coverImageUrl: dest.img, name: dest.name, destination: dest.name })
+        navigate('dashboard', null, { coverImageUrl: dest.img, coverEmoji: dest.emoji, name: dest.name, destination: dest.name })
     }
 
     return (
@@ -81,7 +81,10 @@ export default function DiscoverPage({ navigate }) {
                                     border: '2px solid rgba(255,255,255,0.8)',
                                 }}
                             >
-                                <img src={dest.img} alt={dest.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                {dest.img
+                                    ? <img src={dest.img} alt={dest.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #FFE4EC, #F0E8FA, #E0F7FA)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56 }}>{dest.emoji ?? '🗺️'}</div>
+                                }
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(74,68,88,0.85) 40%, rgba(74,68,88,0.05) 75%)' }} />
 
                                 {/* category badge */}

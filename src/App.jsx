@@ -8,6 +8,9 @@ import DiscoverPage   from './pages/DiscoverPage'
 import ProfilePage    from './pages/ProfilePage'
 import TimelineView   from './pages/TimelineView'
 import PackingListPage from './pages/PackingListPage'
+import DocumentsPage  from './pages/DocumentsPage'
+import MapView        from './pages/MapView'
+import ExpensesPage   from './pages/ExpensesPage'
 
 export default function App() {
     const [page,         setPage]         = useState('dashboard')
@@ -37,8 +40,11 @@ export default function App() {
     if (page === 'discover') return <DiscoverPage navigate={navigate} user={user} />
     if (page === 'profile')  return <ProfilePage  navigate={navigate} user={user} />
     if (page === 'trips')    return <MyTripsPage  navigate={navigate} user={user} />
-    if (page === 'timeline') return <TimelineView tripId={tripId} navigate={navigate} />
-    if (page === 'packing')  return <PackingListPage tripId={tripId} navigate={navigate} />
+    if (page === 'timeline')  return <TimelineView tripId={tripId} navigate={navigate} />
+    if (page === 'packing')   return <PackingListPage tripId={tripId} navigate={navigate} />
+    if (page === 'documents') return <DocumentsPage  tripId={tripId} navigate={navigate} user={user} />
+    if (page === 'map')       return <MapView       tripId={tripId} navigate={navigate} />
+    if (page === 'expenses')  return <ExpensesPage  tripId={tripId} navigate={navigate} />
     return (
         <DashboardPage
             navigate={navigate}

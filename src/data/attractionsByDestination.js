@@ -122,4 +122,26 @@ export const ATTRACTIONS_BY_DESTINATION = {
     { name: 'שכונת בו-קאאפ', type: 'שכונה', icon: '🌈', description: 'שכונת מוסלמים צבעונית עם בתים ורודים, צהובים וכחולים', latitude: -33.9247, longitude: 18.4124, estimatedDuration: '1-2 שעות', openingHours: 'פתוח כל היום' },
     { name: 'פארק קרסטנבוש', type: 'גן בוטני', icon: '🌿', description: 'גן בוטני בלב הטבע האפריקאי, פופולרי לקונצרטים', latitude: -33.9869, longitude: 18.4318, estimatedDuration: '2-3 שעות', openingHours: '08:00-19:00' },
   ],
+
+  'ניו יורק': [
+    { name: 'סנטרל פארק', type: 'פארק', icon: '🌳', description: 'הריאה הירוקה של מנהטן — 341 הקטר של אגמים, שבילים ושלווה בלב הסיטי', latitude: 40.7829, longitude: -73.9654, estimatedDuration: '2-4 שעות', openingHours: 'פתוח כל היום' },
+    { name: 'פסל החירות', type: 'אנדרטה', icon: '🗽', description: 'הסמל הנצחי של החירות והחלום האמריקאי, על אי משלו במפרץ ניו יורק', latitude: 40.6892, longitude: -74.0445, estimatedDuration: '3-4 שעות', openingHours: '09:00-17:00' },
+    { name: 'טיימס סקוור', type: 'כיכר עירונית', icon: '🌃', description: 'מבול האורות והשלטים שלא נכבה לעולם — לב הפעימה של ניו יורק', latitude: 40.7580, longitude: -73.9855, estimatedDuration: '30-60 דקות', openingHours: 'פתוח כל היום' },
+    { name: "ברוקלין ברידג'", type: 'גשר היסטורי', icon: '🌉', description: 'גשר אייקוני מהמאה ה-19 עם נוף מרהיב על מנהטן וברוקלין מהמים', latitude: 40.7061, longitude: -73.9969, estimatedDuration: '1 שעה', openingHours: 'פתוח כל היום' },
+    { name: 'מוזיאון המטרופוליטן', type: 'מוזיאון', icon: '🖼️', description: 'אחד ממוזיאוני האמנות הגדולים בעולם — ממצרים העתיקה ועד אמנות מודרנית', latitude: 40.7794, longitude: -73.9632, estimatedDuration: '2-3 שעות', openingHours: '10:00-17:00' },
+    { name: 'האמפייר סטייט בילדינג', type: 'מגדל תצפית', icon: '🏙️', description: 'הגורד שחקים האייקוני מ-1931 — נוף 360° על כל ניו יורק מהקומה ה-86', latitude: 40.7484, longitude: -73.9857, estimatedDuration: '1-2 שעות', openingHours: '08:00-02:00' },
+    { name: 'ה-High Line', type: 'פארק עירוני', icon: '🌿', description: 'מסילת רכבת נטושה שהפכה לפארק ירוק מרחף מעל רחובות מנהטן', latitude: 40.7480, longitude: -74.0048, estimatedDuration: '1-2 שעות', openingHours: '07:00-22:00' },
+    { name: 'וואן וורלד אובסרבטורי', type: 'מגדל תצפית', icon: '🗼', description: 'מגדל החירות החדש — מרפסת התצפית הגבוהה ביותר בחצי הכדור המערבי', latitude: 40.7126, longitude: -74.0099, estimatedDuration: '1-2 שעות', openingHours: '09:00-21:00' },
+  ],
+
+  'פיטסבורג': [
+    { name: 'פוינט סטייט פארק', type: 'פארק', icon: '⛲', description: 'פארק עירוני במפגש שלושת הנהרות, עם מזרקה איקונית ונוף מרהיב לעיר', latitude: 40.4407, longitude: -80.0142, estimatedDuration: '1-2 שעות', openingHours: 'פתוח כל היום' },
+    { name: 'רכבל דוקיין', type: 'רכבל הררי', icon: '🚡', description: 'רכבל היסטורי מהמאה ה-19 המטפס להר וושינגטון עם נוף עוצר נשימה על העיר', latitude: 40.4366, longitude: -80.0186, estimatedDuration: '30-60 דקות', openingHours: '05:30-00:45' },
+    { name: 'הר וושינגטון', type: 'נקודת תצפית', icon: '🌄', description: 'מרפסת התצפית האייקונית על פיטסבורג ושלושת נהרותיה, מרהיב בלילה', latitude: 40.4334, longitude: -80.0136, estimatedDuration: '30-60 דקות', openingHours: 'פתוח כל היום' },
+    { name: 'מוזיאון אנדי וורהול', type: 'מוזיאון', icon: '🎨', description: 'המוזיאון הגדול בעולם המוקדש לאמן יחיד — בן עירה המפורסם של פיטסבורג', latitude: 40.4566, longitude: -80.0001, estimatedDuration: '1-2 שעות', openingHours: '10:00-17:00' },
+    { name: 'Phipps Conservatory', type: 'גן בוטני', icon: '🌺', description: 'חממות זכוכית ויקטוריאניות מפוארות עם פרחים אקזוטיים מכל העולם', latitude: 40.4395, longitude: -79.9494, estimatedDuration: '1-2 שעות', openingHours: '09:30-17:00' },
+    { name: 'מוזיאון קרנגי להיסטוריה של הטבע', type: 'מוזיאון', icon: '🦕', description: 'שלדי דינוזאורים מהמרשימים בעולם ותצוגות טבע ענקיות', latitude: 40.4434, longitude: -79.9499, estimatedDuration: '2-3 שעות', openingHours: '10:00-17:00' },
+    { name: 'PNC Park', type: 'אצטדיון בייסבול', icon: '⚾', description: 'אחד האצטדיונים היפים בליגה — נוף ישיר על קו הרקיע של פיטסבורג', latitude: 40.4469, longitude: -80.0057, estimatedDuration: '2-3 שעות', openingHours: 'לפי משחקים' },
+    { name: 'מרכז המדע קרנגי', type: 'מוזיאון מדע', icon: '🔬', description: 'מוזיאון מדע אינטראקטיבי לכל המשפחה, עם צוללת אמיתית ותיאטרון אומאקס', latitude: 40.4624, longitude: -80.0156, estimatedDuration: '2-3 שעות', openingHours: '10:00-17:00' },
+  ],
 }
