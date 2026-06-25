@@ -19,3 +19,74 @@ TripFlow הוא אתר אינטראקטיבי המאפשר למטיילים לת
 1. **טיימר משוער וחי:** לצד כל אטרקציה מוצג זמן שהייה משוער וטיימר ייעודי. המערכת משקללת את הזמנים ומתריעה למשתמש בזמן אמת האם יישאר לו מספיק זמן להגיע לאטרקציה הבאה לפני שעות הסגירה שלה.
 2. **ציר זמן גמיש (Drag & Drop Timeline):** במידה והזמן אינו מספיק, המשתמש יכול להעביר בלחיצה או בגרירה את האטרקציה ליום המחרת, וציר הזמן מתעדכן אוטומטית.
 3. **הכל במקום אחד (All-in-One):** שילוב ייחודי של ניהול זמנים, מפה מובנית, רשימת ציוד, ריכוז מסמכים רלוונטיים, ומערכת תקציב דו-מטבעית (שקלים והמרה אוטומטית לדולר).
+---
+
+## 📊 תרשים מודל הנתונים (ERD - Supabase)
+הקשרים ומבנה בסיס הנתונים ממומשים ב-Supabase ומיוצגים באמצעות התרשים הבא:
+
+```mermaid
+erDiagram
+    users {
+        uuid id PK
+        text full_name
+    }
+    trips {
+        uuid id PK
+        uuid user_id FK
+        text name
+        text destination
+        date start_date
+        date end_date
+        text cover_emoji
+        timestamp created_at
+        text cover_image_url
+        int stops
+        text trip_type
+        text local_currency
+    }
+    attractions {
+        uuid id PK
+        uuid trip_id FK
+        text name
+        text visit_time
+        int duration_minutes
+        int order_index
+        timestamp created_at
+        text description
+        timestamptz actual_start_time
+        int actual_duration_minutes
+        text estimated_arrival_time
+        text estimated_duration
+        text opening_hours
+        text status
+        int scheduled_day
+    }
+    trip_documents {
+        uuid id PK
+        uuid trip_id FK
+        uuid user_id FK
+        text name
+        text file_path
+        text file_type
+    }
+    packing_items {
+        uuid id PK
+        uuid trip_id FK
+        text item_name
+        text category
+        bool is_packed
+        bool is_custom
+        timestamp created_at
+    }
+    user_preferences {
+        uuid id PK
+        uuid user_id FK
+        text category
+        bool is_active
+    }
+
+    users ||--o{ trips : "creates"
+    users ||--o{ user_preferences : "has"
+    trips ||--o{ attractions : "contains"
+    trips ||--o{ trip_documents : "includes"
+    trips ||--o{ packing_items : "has_items"
