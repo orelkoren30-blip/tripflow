@@ -12,7 +12,8 @@
       "Bash(echo \"exit: $?\")",
       "WebSearch",
       "WebFetch(domain:unsplash.com)",
-      "WebFetch(domain:source.unsplash.com)"
+      "WebFetch(domain:source.unsplash.com)",
+      "Bash(git fetch *)"
     ]
   }
 }
