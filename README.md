@@ -1,16 +1,21 @@
-# React + Vite
+# TripFlow 🌍✈️
+> הפלטפורמה החכמה לניהול ותכנון לוחות זמנים דינמיים בחופשה, המרת תקציב וריכוז מסמכים במקום אחד.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 סקירה כללית (Overview)
+TripFlow הוא אתר אינטראקטיבי המאפשר למטיילים לתכנן ולארגן את מסלול הטיול מראש, תוך ניהול דינמי של לוחות הזמנים, התקציב והמסמכים במהלך החופשה עצמה בצורה פשוטה, קלילה ומובנת.
 
-Currently, two official plugins are available:
+## 💔 הבעיה (The Problem)
+מטיילים רבים נתקלים בקושי רב בניהול הזמן במהלך החופשה. תכנונים מראש נוטים להשתבש בפועל עקב עיכובים באטרקציות, מה שמוביל להחמצת אתרים שנסגרים מוקדם. בנוסף, המטיילים נאלצים "לזגזג" בין אפליקציות שונות כדי לבדוק מסמכים (כרטיסי טיסה/מלון), לנהל תקציב במטבע מקומי ולראות מפה.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🎯 קהל היעד (Target Audience)
+מטיילים עצמאיים, זוגות ומשפחות המחפשים פתרון ריכוזי, פשוט וקליל לתכנון הטיול שלהם, ללא צורך בהסתבכות עם מערכות מורכבות. קהל היעד משתמש באפליקציה הן בשלב התכנון בבית והן "תוך כדי תנועה" במהלך ימי החופשה.
 
-## React Compiler
+## ⚔️ מתחרים ובידול (Competitors & Differentiation)
+* **Wanderlog / TripIt:** אפליקציות בינלאומיות פופולריות לניהול מסלולים.
+* **Google Sheets / Excel:** תכנון ידני מסורתי בטבלאות.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🌟 הערך הייחודי והבידול של TripFlow:
+בשונה מהמתחרים, TripFlow לא רק מציג רשימת אתרים, אלא מנהל את **לוח הזמנים בצורה אקטיבית ודינמית**:
+1. **טיימר משוער וחי:** לצד כל אטרקציה מוצג זמן שהייה משוער וטיימר ייעודי. המערכת משקללת את הזמנים ומתריעה למשתמש בזמן אמת האם יישאר לו מספיק זמן להגיע לאטרקציה הבאה לפני שעות הסגירה שלה.
+2. **ציר זמן גמיש (Drag & Drop Timeline):** במידה והזמן אינו מספיק, המשתמש יכול להעביר בלחיצה או בגרירה את האטרקציה ליום המחרת, וציר הזמן מתעדכן אוטומטית.
+3. **הכל במקום אחד (All-in-One):** שילוב ייחודי של ניהול זמנים, מפה מובנית, רשימת ציוד, ריכוז מסמכים רלוונטיים, ומערכת תקציב דו-מטבעית (שקלים והמרה אוטומטית לדולר).
